@@ -1,89 +1,116 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/config'; // Asegúrate de que la ruta sea correcta a tu archivo config.ts
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'; // Importa AMBAS funciones
+import { auth } from '../firebase/config'; // Asegúrate de que la ruta sea correcta
 
-const SignUp: React.FC = () => {
-  // Estados para almacenar el correo electrónico y la contraseña
+const AuthForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // Estados para manejar mensajes de error y éxito
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  // Nuevo estado: true para modo inicio de sesión, false para modo registro
+  const [isLoginMode, setIsLoginMode] = useState(true); 
 
-  // Función que se ejecuta cuando se envía el formulario de registro
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault(); // Evita que la página se recargue al enviar el formulario
-
-    // Limpia los mensajes anteriores al intentar un nuevo registro
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
     setSuccess(null);
 
     try {
-      // Llama a la función de Firebase para crear un nuevo usuario con correo y contraseña
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Si el registro es exitoso, imprime el usuario en consola y muestra un mensaje de éxito
-      console.log('Usuario registrado con éxito:', userCredential.user);
-      setSuccess('¡Registro exitoso! Ya puedes iniciar sesión.');
-
-      // Opcional: Limpia los campos del formulario después de un registro exitoso
+      if (isLoginMode) { // Si estamos en modo de inicio de sesión
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log('Usuario ha iniciado sesión con éxito.');
+        setSuccess('¡Inicio de sesión exitoso!');
+      } else { // Si estamos en modo de registro
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log('Usuario registrado con éxito.');
+        setSuccess('¡Registro exitoso! Ya estás autenticado.');
+      }
       setEmail('');
       setPassword('');
-
-    } catch (error: any) { // Captura cualquier error que ocurra durante el registro
-      console.error('Error al registrar:', error.message);
-
-      // Maneja errores específicos de Firebase y muestra un mensaje amigable al usuario
-      if (error.code === 'auth/email-already-in-use') {
-        setError('El correo electrónico ya está en uso. Por favor, usa otro.');
-      } else if (error.code === 'auth/invalid-email') {
+    } catch (err: any) {
+      console.error('Error de autenticación:', err.message);
+      // Manejo de errores específicos
+      if (err.code === 'auth/email-already-in-use') {
+        setError('El correo electrónico ya está en uso. Usa "Iniciar Sesión" o cambia de correo.');
+      } else if (err.code === 'auth/invalid-email') {
         setError('Formato de correo electrónico inválido.');
-      } else if (error.code === 'auth/weak-password') {
-        setError('La contraseña es demasiado débil. Debe tener al menos 6 caracteres.');
-      } else {
-        // Para cualquier otro error, muestra el mensaje general de Firebase
-        setError(`Error al registrar: ${error.message}`);
+      } else if (err.code === 'auth/weak-password') {
+        setError('La contraseña es demasiado débil (mínimo 6 caracteres).');
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Correo electrónico o contraseña incorrectos.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Demasiados intentos fallidos. Inténtalo de nuevo más tarde.');
+      }
+      else {
+        setError(`Error: ${err.message}`);
       }
     }
   };
 
   return (
     <div style={styles.container}>
-      <h2>Registro de Usuario</h2>
-      <form onSubmit={handleSignUp} style={styles.form}>
-        <div style={styles.formGroup}>
+      <h2>{isLoginMode ? 'Iniciar Sesión' : 'Registrarse'}</h2> {/* Título dinámico */}
+      
+      {/* Mensaje de bienvenida/instrucción */}
+      {!success && !error && (
+        <p style={{ color: 'gray', fontSize: '0.9em', marginBottom: '15px' }}>
+          {isLoginMode ? 'Ingresa tus credenciales.' : 'Regístrate para crear una cuenta nueva.'}
+        </p>
+      )}
+
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <div>
           <label htmlFor="email" style={styles.label}>Correo Electrónico:</label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required // Campo obligatorio
+            required
             style={styles.input}
           />
         </div>
-        <div style={styles.formGroup}>
+        <div>
           <label htmlFor="password" style={styles.label}>Contraseña:</label>
           <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required // Campo obligatorio
+            required
             style={styles.input}
           />
         </div>
-        <button type="submit" style={styles.button}>Registrarse</button>
+        
+        {/* Botón principal (submit) */}
+        <button type="submit" style={styles.button}>
+          {isLoginMode ? 'Iniciar Sesión' : 'Registrarse'} {/* Texto dinámico */}
+        </button>
       </form>
 
-      {/* Muestra mensajes de éxito o error */}
+      {/* Mensajes de éxito o error */}
       {success && <p style={styles.successMessage}>{success}</p>}
       {error && <p style={styles.errorMessage}>{error}</p>}
+
+      {/* Botón para alternar entre modos */}
+      <button 
+        type="button" // IMPORTANTE: type="button" para que no envíe el formulario
+        onClick={() => {
+          setIsLoginMode(prevMode => !prevMode); // Alterna el modo
+          setError(null); // Limpia mensajes al cambiar de modo
+          setSuccess(null);
+          setEmail('');
+          setPassword('');
+        }} 
+        style={{ ...styles.button, backgroundColor: '#6c757d', marginTop: '10px' }} // Estilo diferente
+      >
+        {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Iniciar Sesión'}
+      </button>
     </div>
   );
 };
 
-// Estilos básicos para el componente (puedes mover esto a un archivo CSS)
+// Estilos (mantienen los de SignUp, puedes ajustarlos)
 const styles = {
   container: {
     maxWidth: '400px',
@@ -127,9 +154,6 @@ const styles = {
     fontWeight: 'bold' as 'bold',
     transition: 'background-color 0.2s ease',
   },
-  buttonHover: { // Esto es un ejemplo, se implementaría con CSS en un archivo aparte
-    backgroundColor: '#0056b3',
-  },
   successMessage: {
     color: 'green',
     marginTop: '15px',
@@ -142,4 +166,4 @@ const styles = {
   },
 };
 
-export default SignUp;
+export default AuthForm;
