@@ -1,7 +1,9 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react'; // Necesitamos useState y useEffect de React
-import SignUp from './components/SignUp';       // Importamos el componente de registro
+import AuthForm from './components/AuthForm.tsx';
+
+//import SignUp from './components/SignUp';       // Importamos el componente de registro
 import HomePage from './components/HomePage';   // Importamos el componente de la página principal (simplificado)
 import { auth } from './firebase/config';     // Importamos la instancia de autenticación de Firebase
 import { type User, onAuthStateChanged, signOut } from 'firebase/auth';
@@ -74,7 +76,7 @@ function App() {
         // Mostramos el formulario de registro.
         // *******************************************************************
         <div style={{ padding: '20px', maxWidth: '400px', margin: '50px auto' }}>
-          <SignUp /> {/* Renderizamos el formulario de registro */}
+          <AuthForm /> {/* Renderizamos el formulario de registro */}
         </div>
       )}
     </div>

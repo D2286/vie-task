@@ -3,7 +3,7 @@ import React from 'react';
 const HomePage: React.FC = () => {
   return (
     <div style={styles.container}>
-      <h2 style={styles.text}>¡Bienvenido a tu Página Principal!</h2> {/* Añade style={styles.text} */}
+      <h2 style={styles.text}>¡Bienvenido</h2> {/* Añade style={styles.text} */}
       <p style={styles.text}>Este es el contenido simple de tu Home, renderizado directamente.</p> {/* Añade style={styles.text} */}
       <p style={styles.text}>Aquí es donde irán las funciones principales de tu aplicación.</p> {/* Añade style={styles.text} */}
     </div>
