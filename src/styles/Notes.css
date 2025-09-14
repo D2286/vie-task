@@ -1,0 +1,99 @@
+.notes-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+/* título */
+.notes-container h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* formulario */
+.notes-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.notes-form select,
+.notes-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.notes-form button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.notes-form button.add {
+  background-color: #4caf50;
+  color: white;
+}
+
+.notes-form button.add:hover {
+  background-color: #45a049;
+}
+
+.notes-form button.sub {
+  background-color: #f44336;
+  color: white;
+}
+
+.notes-form button.sub:hover {
+  background-color: #d32f2f;
+}
+
+/* gráfico */
+.notes-chart {
+  width: 100%;
+  max-width: 700px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+}
+
+/* historial */
+.notes-history {
+  width: 100%;
+  max-width: 700px;
+}
+
+.notes-history h3 {
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.notes-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notes-history ul li {
+  background: #f9f9f9;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  border-left: 4px solid #4caf50;
+}

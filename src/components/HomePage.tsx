@@ -1,29 +1,18 @@
-import React from 'react';
+import React from "react";
+import "../styles/HomePage.css";
+import Notes from "./Notes.tsx";
 
 const HomePage: React.FC = () => {
   return (
-    <div style={styles.container}>
-      <h2 style={styles.text}>¡Bienvenido</h2> {/* Añade style={styles.text} */}
-      <p style={styles.text}>Este es el contenido simple de tu Home, renderizado directamente.</p> {/* Añade style={styles.text} */}
-      <p style={styles.text}>Aquí es donde irán las funciones principales de tu aplicación.</p> {/* Añade style={styles.text} */}
+    <div className="home-container">
+      <h2 className="home-title">¡Bienvenido!</h2>
+      <p className="home-text">
+        Aquí podrás guardar tus anotaciones personales.
+      </p>
+
+      <Notes />
     </div>
   );
-};
-
-const styles = {
-  container: {
-    padding: '30px',
-    border: '1px solid #007bff',
-    borderRadius: '10px',
-    maxWidth: '600px',
-    margin: '50px auto',
-    backgroundColor: '#eaf4ff', // Fondo azul muy claro
-    textAlign: 'center' as 'center',
-    boxShadow: '0 4px 15px rgba(0, 123, 255, 0.2)',
-  },
-  text: { // ¡Nuevo estilo para el texto!
-    color: '#333', // Color gris oscuro, fácil de leer
-  },
 };
 
 export default HomePage;

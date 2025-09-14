@@ -1,50 +1,39 @@
-import React, { useState } from 'react';
-import { auth } from '../firebase/config';  
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { createUserProfile } from '../services/authService.ts'; // ✅ IMPORTACIÓN CORRECTA
+import { useState } from "react";
+import { auth } from "../firebase/config";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import "../styles/AuthForm.css"; // Asegúrate de tener este archivo CSS para los estilos
 
-const AuthForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+export default function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      if (isRegistering) {
-        // 🔹 Registro
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-        // 🔹 Guardar perfil en Firestore
-        await createUserProfile(userCredential.user.uid, {
-          email,
-          createdAt: new Date(),
-        });
-
-        console.log('Usuario registrado y perfil creado:', userCredential.user);
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("✅ Usuario logueado");
       } else {
-        // 🔹 Login
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('Usuario logueado:', userCredential.user);
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log("✅ Usuario registrado");
       }
     } catch (error) {
-      console.error('Error en autenticación:', error);
+      console.error("❌ Error en auth:", error);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="auth-container">
+      <h2 className="auth-title">{isLogin ? "Iniciar Sesión" : "Registrarse"}</h2>
+      <form onSubmit={handleSubmit} className="auth-form">
         <input
           type="email"
-          placeholder="Correo"
+          placeholder="Correo electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="auth-input"
           required
         />
         <input
@@ -52,26 +41,19 @@ const AuthForm: React.FC = () => {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="auth-input"
           required
         />
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          {isRegistering ? 'Registrar' : 'Entrar'}
+        <button type="submit" className="auth-button">
+          {isLogin ? "Entrar" : "Registrarse"}
         </button>
       </form>
-      <p
-        onClick={() => setIsRegistering(!isRegistering)}
-        className="text-blue-500 mt-4 text-center cursor-pointer"
-      >
-        {isRegistering
-          ? '¿Ya tienes cuenta? Inicia sesión'
-          : '¿No tienes cuenta? Regístrate'}
+      <p className="auth-switch">
+        {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
+        <span onClick={() => setIsLogin(!isLogin)} className="auth-link">
+          {isLogin ? "Regístrate" : "Inicia sesión"}
+        </span>
       </p>
     </div>
   );
-};
-
-export default AuthForm;
+}

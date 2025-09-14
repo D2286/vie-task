@@ -45,8 +45,7 @@ Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\App.c
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\App.tsx:
 // src/App.tsx
-
-import React, { useState, useEffect } from 'react'; // Necesitamos useState y useEffect de React
+import { useState, useEffect } from "react"; // Necesitamos useState y useEffect de React
 import AuthForm from './components/AuthForm.tsx';
 
 //import SignUp from './components/SignUp';       // Importamos el componente de registro
@@ -101,7 +100,7 @@ function App() {
   // 5. Renderizado Condicional Principal: Aquí 'App.tsx' decide qué mostrar
   return (
     <div className="App" style={{ textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Mi Aplicación de Autenticación</h1>
+      <h1>Vie-task</h1>
 
       {user ? (
         // *******************************************************************
@@ -174,11 +173,14 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f6f9; /* Fondo suave opcional */
+  font-family: system-ui, sans-serif;
 }
+
 
 h1 {
   font-size: 3.2em;
@@ -236,53 +238,42 @@ Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\vite-
 
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\AuthForm.tsx:
-import React, { useState } from 'react';
-import { auth } from '../firebase/config';  
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { createUserProfile } from '../services/authService.ts'; // ✅ IMPORTACIÓN CORRECTA
+import { useState } from "react";
+import { auth } from "../firebase/config";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import "../styles/AuthForm.css"; // Asegúrate de tener este archivo CSS para los estilos
 
-const AuthForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+export default function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      if (isRegistering) {
-        // 🔹 Registro
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-        // 🔹 Guardar perfil en Firestore
-        await createUserProfile(userCredential.user.uid, {
-          email,
-          createdAt: new Date(),
-        });
-
-        console.log('Usuario registrado y perfil creado:', userCredential.user);
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("✅ Usuario logueado");
       } else {
-        // 🔹 Login
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('Usuario logueado:', userCredential.user);
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log("✅ Usuario registrado");
       }
     } catch (error) {
-      console.error('Error en autenticación:', error);
+      console.error("❌ Error en auth:", error);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="auth-container">
+      <h2 className="auth-title">{isLogin ? "Iniciar Sesión" : "Registrarse"}</h2>
+      <form onSubmit={handleSubmit} className="auth-form">
         <input
           type="email"
-          placeholder="Correo"
+          placeholder="Correo electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="auth-input"
           required
         />
         <input
@@ -290,61 +281,287 @@ const AuthForm: React.FC = () => {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="auth-input"
           required
         />
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          {isRegistering ? 'Registrar' : 'Entrar'}
+        <button type="submit" className="auth-button">
+          {isLogin ? "Entrar" : "Registrarse"}
         </button>
       </form>
-      <p
-        onClick={() => setIsRegistering(!isRegistering)}
-        className="text-blue-500 mt-4 text-center cursor-pointer"
-      >
-        {isRegistering
-          ? '¿Ya tienes cuenta? Inicia sesión'
-          : '¿No tienes cuenta? Regístrate'}
+      <p className="auth-switch">
+        {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
+        <span onClick={() => setIsLogin(!isLogin)} className="auth-link">
+          {isLogin ? "Regístrate" : "Inicia sesión"}
+        </span>
       </p>
     </div>
   );
-};
-
-export default AuthForm;
-
+}
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\HomePage.tsx:
-import React from 'react';
+import React from "react";
+import "../styles/HomePage.css";
+import Notes from "./Notes.tsx";
 
 const HomePage: React.FC = () => {
   return (
-    <div style={styles.container}>
-      <h2 style={styles.text}>¡Bienvenido</h2> {/* Añade style={styles.text} */}
-      <p style={styles.text}>Este es el contenido simple de tu Home, renderizado directamente.</p> {/* Añade style={styles.text} */}
-      <p style={styles.text}>Aquí es donde irán las funciones principales de tu aplicación.</p> {/* Añade style={styles.text} */}
+    <div className="home-container">
+      <h2 className="home-title">¡Bienvenido!</h2>
+      <p className="home-text">
+        Aquí podrás guardar tus anotaciones personales.
+      </p>
+
+      <Notes />
     </div>
   );
 };
 
-const styles = {
-  container: {
-    padding: '30px',
-    border: '1px solid #007bff',
-    borderRadius: '10px',
-    maxWidth: '600px',
-    margin: '50px auto',
-    backgroundColor: '#eaf4ff', // Fondo azul muy claro
-    textAlign: 'center' as 'center',
-    boxShadow: '0 4px 15px rgba(0, 123, 255, 0.2)',
-  },
-  text: { // ¡Nuevo estilo para el texto!
-    color: '#333', // Color gris oscuro, fácil de leer
-  },
+export default HomePage;
+
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\NoteChart.tsx:
+import React from "react";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+interface NoteChartProps {
+  graphData: {
+    label: string;
+    value: number;
+    name: string;
+    isProjected?: boolean;
+  }[];
+}
+
+const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
+  return (
+    <div style={{ width: "100%", height: 400 }}>
+      <ResponsiveContainer>
+        <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="label" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#8884d8"
+            activeDot={{ r: 8 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 };
 
-export default HomePage;
+export default NoteChart;
+
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\Notes.tsx:
+import { useState } from "react";
+import NoteChart from "./NoteChart";
+import "../styles/Notes.css"; 
+
+interface DataPoint {
+  label: string;
+  value: number;
+  name: string;
+  isProjected?: boolean;
+}
+
+const daysOfWeek = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
+
+export default function Notes() {
+  const [graphData, setGraphData] = useState<DataPoint[]>([]);
+  const [selectedDay, setSelectedDay] = useState(daysOfWeek[0]);
+  const [amount, setAmount] = useState<number | "">("");
+  const [name, setName] = useState<string>("");
+
+  const updateDayValue = (operation: "add" | "sub") => {
+    if (amount === "") return;
+
+    setGraphData((prev) => {
+      const lastValue = prev.length > 0 ? prev[prev.length - 1].value : 0;
+      const newValue =
+        operation === "add" ? lastValue + Number(amount) : lastValue - Number(amount);
+
+      return [
+        ...prev,
+        {
+          label: selectedDay,
+          value: newValue,
+          name: name || "Sin nombre",
+        },
+      ];
+    });
+
+    // limpiar input de nombre y cantidad
+    setAmount("");
+    setName("");
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "20px" }}>
+      <h2>Registro de Notas</h2>
+
+      <div style={{ marginBottom: "10px" }}>
+        <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}>
+          {daysOfWeek.map((day) => (
+            <option key={day} value={day}>
+              {day}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ marginBottom: "10px" }}>
+        <input
+          type="text"
+          placeholder="Nombre del registro"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      <div style={{ marginBottom: "10px" }}>
+        <input
+          type="number"
+          placeholder="Cantidad"
+          value={amount}
+          onChange={(e) =>
+            setAmount(e.target.value === "" ? "" : Number(e.target.value))
+          }
+        />
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <button onClick={() => updateDayValue("add")}>➕ Sumar</button>
+        <button onClick={() => updateDayValue("sub")}>➖ Restar</button>
+      </div>
+
+      <NoteChart graphData={graphData} />
+
+      <h3>Historial</h3>
+      <ul>
+        {graphData.map((entry, index) => (
+          <li key={index}>
+            <strong>{entry.label}</strong> - {entry.name}: {entry.value}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\TradingViewChart.tsx:
+/* // src/components/TradingViewChart.tsx
+import React, { useRef, useEffect } from 'react';
+import { createChart } from 'lightweight-charts';
+
+// Datos de ejemplo
+const sampleData = [
+    {
+        close: 108.997,
+        high: 121.209,
+        low: 96.653,
+        open: 104.561,
+        time: { year: 2018, month: 9, day: 22 },
+    },
+    {
+        close: 115.345,
+        high: 125.409,
+        low: 105.153,
+        open: 108.997,
+        time: { year: 2018, month: 9, day: 23 },
+    },
+    {
+        close: 120.456,
+        high: 130.567,
+        low: 110.234,
+        open: 115.345,
+        time: { year: 2018, month: 9, day: 24 },
+    },
+    {
+        close: 112.987,
+        high: 122.999,
+        low: 109.567,
+        open: 120.456,
+        time: { year: 2018, month: 9, day: 25 },
+    },
+    {
+        close: 125.765,
+        high: 135.876,
+        low: 120.123,
+        open: 112.987,
+        time: { year: 2018, month: 9, day: 26 },
+    },
+];
+
+const TradingViewChart = () => {
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+    const chartRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (chartContainerRef.current) {
+            const chartOptions = {
+                width: 600,
+                height: 300,
+                layout: {
+                    backgroundColor: '#ffffff',
+                    textColor: '#333',
+                },
+                rightPriceScale: {
+                    visible: true,
+                },
+                timeScale: {
+                    visible: true,
+                },
+            };
+
+            const chart = createChart(chartContainerRef.current, chartOptions);
+            chartRef.current = chart;
+
+            const candlestickSeries = chart.addCandlestickSeries({
+                upColor: '#26a69a',
+                downColor: '#ef5350',
+                borderVisible: false,
+                wickUpColor: '#26a69a',
+                wickDownColor: '#ef5350',
+            });
+
+            candlestickSeries.setData(sampleData);
+            chart.timeScale().fitContent();
+        }
+
+        return () => {
+            if (chartRef.current) {
+                chartRef.current.remove();
+            }
+        };
+    }, []);
+
+    return <div ref={chartContainerRef} className="tradingview-chart-container" />;
+};
+
+export default TradingViewChart; */
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\firebase\config.ts:
 // src/firebase/config.ts
@@ -389,10 +606,222 @@ export const createUserProfile = async (uid: string, data: { email: string; crea
 export default createUserProfile;
 
 
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\AuthForm.css:
+/* src/styles/AuthForm.css */
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #2c2c2c;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.auth-title {
+  color: #fff;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.auth-input {
+  padding: 0.75rem;
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.auth-button {
+  padding: 0.75rem;
+  background-color: #646cff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.auth-button:hover {
+  background-color: #535bf2;
+}
+
+.auth-switch {
+  margin-top: 1rem;
+  color: #aaa;
+}
+
+.auth-link {
+  color: #646cff;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 5px;
+}
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\HomePage.css:
+.home-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra vertical */
+  align-items: center;     /* Centra horizontal */
+  min-height: 100vh;       /* Ocupa toda la pantalla */
+  
+  padding: 2rem;
+  max-width: 700px;
+  margin: auto; /* Centrado automático */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.home-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.home-title {
+  font-size: 2rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.home-text {
+  color: #555;
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.6;
+}
+
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\Notes.css:
+.notes-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+/* título */
+.notes-container h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* formulario */
+.notes-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.notes-form select,
+.notes-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.notes-form button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.notes-form button.add {
+  background-color: #4caf50;
+  color: white;
+}
+
+.notes-form button.add:hover {
+  background-color: #45a049;
+}
+
+.notes-form button.sub {
+  background-color: #f44336;
+  color: white;
+}
+
+.notes-form button.sub:hover {
+  background-color: #d32f2f;
+}
+
+/* gráfico */
+.notes-chart {
+  width: 100%;
+  max-width: 700px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+}
+
+/* historial */
+.notes-history {
+  width: 100%;
+  max-width: 700px;
+}
+
+.notes-history h3 {
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.notes-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notes-history ul li {
+  background: #f9f9f9;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  border-left: 4px solid #4caf50;
+}
+
+
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\use\useAuth.ts:
 // src/hooks/useAuth.ts
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "../firebase/config";
 
 export function useAuth() {

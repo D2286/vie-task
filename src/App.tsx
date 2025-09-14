@@ -1,6 +1,5 @@
 // src/App.tsx
-
-import React, { useState, useEffect } from 'react'; // Necesitamos useState y useEffect de React
+import { useState, useEffect } from "react"; // Necesitamos useState y useEffect de React
 import AuthForm from './components/AuthForm.tsx';
 
 //import SignUp from './components/SignUp';       // Importamos el componente de registro
@@ -55,7 +54,7 @@ function App() {
   // 5. Renderizado Condicional Principal: Aquí 'App.tsx' decide qué mostrar
   return (
     <div className="App" style={{ textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Mi Aplicación de Autenticación</h1>
+      <h1>Vie-task</h1>
 
       {user ? (
         // *******************************************************************
@@ -66,7 +65,8 @@ function App() {
         <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px', maxWidth: '600px', margin: '20px auto', backgroundColor: '#f9f9f9' }}>
           <HomePage /> {/* Renderizamos el componente de la página principal (simplificado) */}
           <p>Estás autenticado como: <strong>{user.email}</strong></p> {/* Mostramos el email del usuario logueado */}
-          <p>Tu ID de usuario (UID) es: {user.uid}</p>                 {/* Mostramos el UID del usuario */}
+          {/* <p>Tu ID de usuario (UID) es: {user.uid}</p> */}
+              {/* Mostramos el UID del usuario */}
           <button onClick={handleLogout} style={styles.button}>Cerrar Sesión</button> {/* Botón para cerrar sesión */}
         </div>
       ) : (
