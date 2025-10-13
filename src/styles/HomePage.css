@@ -1,35 +1,45 @@
 .home-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centra vertical */
-  align-items: center;     /* Centra horizontal */
-  min-height: 100vh;       /* Ocupa toda la pantalla */
-  
-  padding: 2rem;
-  max-width: 700px;
-  margin: auto; /* Centrado automático */
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    /* Esto es correcto, solo afecta la alineación interna */
+    justify-content: center; 
+    align-items: center;      
+    
+    padding: 2rem;
+    max-width: 700px;
+    margin: auto; /* Centrado automático */
+    
+    /* ⭐ MODO OSCURO: Fondo y Texto */
+    /* Fondo de la tarjeta: Gris oscuro, más claro que el body (#0d0d0d) */
+    background-color: #1e1e1e;
+    /* Texto base: Blanco suave */
+    color: #f0f0f0; 
+    
+    border-radius: 12px;
+    /* Sombra ajustada para el modo oscuro */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); 
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 
 .home-container:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    /* Mantener el efecto de elevación y ajustar la sombra */
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
 }
 
 .home-title {
-  font-size: 2rem;
-  color: #007bff;
-  margin-bottom: 1rem;
+    font-size: 2rem;
+    /* Color de título que contrasta sobre el fondo oscuro */
+    color: #4da6ff; /* Un azul claro y vibrante */
+    margin-bottom: 1rem;
 }
 
 .home-text {
-  color: #555;
-  font-size: 1.1rem;
-  margin-bottom: 0.8rem;
-  line-height: 1.6;
+    /* Color de texto secundario/cuerpo para visibilidad */
+    color: #aaa; /* Gris claro */
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
 }

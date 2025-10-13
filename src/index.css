@@ -5,13 +5,14 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #242424; /* Base para el modo oscuro */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 a {
   font-weight: 500;
@@ -28,10 +29,18 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f4f6f9; /* Fondo suave opcional */
+  
+  /* ⭐ CAMBIO CLAVE: Fondo más oscuro para toda la página */
+  /* Usamos #0d0d0d para la capa más oscura. */
+  background-color: #0d0d0d; 
+  /* Si el fondo original era #f4f6f9 (claro), este cambio fuerza el oscuro */
+  
   font-family: system-ui, sans-serif;
 }
 
+@media (prefers-color-scheme: light) {
+  /* ... */
+}
 
 h1 {
   font-size: 3.2em;

@@ -1,3 +1,4 @@
+// src/components/NoteChart.tsx
 import React from "react";
 import {
   LineChart,
@@ -9,14 +10,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { type Transaction } from "../use/useNotes"; 
 
 interface NoteChartProps {
-  graphData: {
-    label: string;
-    value: number;
-    name: string;
-    isProjected?: boolean;
-  }[];
+  graphData: Transaction[]; 
 }
 
 const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
@@ -25,7 +22,7 @@ const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
       <ResponsiveContainer>
         <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="label" />
+          <XAxis dataKey="label" /> 
           <YAxis />
           <Tooltip />
           <Legend />

@@ -45,37 +45,24 @@ Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\App.c
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\App.tsx:
 // src/App.tsx
-import { useState, useEffect } from "react"; // Necesitamos useState y useEffect de React
+// ⭐ MODIFICADO: Ya NO necesitamos importar useState ni useEffect, ya que están en useAuth.
 import AuthForm from './components/AuthForm.tsx';
-
-//import SignUp from './components/SignUp';       // Importamos el componente de registro
-import HomePage from './components/HomePage';   // Importamos el componente de la página principal (simplificado)
-import { auth } from './firebase/config';     // Importamos la instancia de autenticación de Firebase
-import { type User, onAuthStateChanged, signOut } from 'firebase/auth';
+//import SignUp from './components/SignUp';       // Importamos el componente de registro
+import HomePage from './components/HomePage';   // Importamos el componente de la página principal (simplificado)
+import { auth } from './firebase/config';     // Importamos la instancia de autenticación de Firebase
+import { type User, onAuthStateChanged, signOut } from 'firebase/auth'; // Mantener 'signOut'
+// ⭐ NUEVO: Importamos nuestro custom hook
+import { useAuth } from "./use/useAuth"; 
 
 function App() {
   // 1. Estados de la aplicación para manejar la autenticación
-  // 'user': Almacena la información del usuario logueado (un objeto User de Firebase) o null.
-  const [user, setUser] = useState<User | null>(null);
-  // 'loading': Es true mientras la aplicación está verificando el estado de autenticación inicial con Firebase.
-  const [loading, setLoading] = useState(true);
+  // ⭐ MODIFICADO: Usamos el custom hook para obtener 'user' y 'loading'.
+  const { user, loading } = useAuth();
+  
+  // 2. useEffect: ELIMINADO. Ahora está en useAuth.ts
+  // ... (Se eliminó el bloque de useEffect aquí)
 
-  // 2. useEffect: El corazón de la gestión de la sesión con Firebase
-  useEffect(() => {
-    // onAuthStateChanged: Esta es una función de Firebase que configura un "escuchador".
-    // Se activa cada vez que el estado de autenticación del usuario cambia (alguien inicia sesión, cierra sesión, se registra).
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Actualiza nuestro estado 'user' con la información del usuario actual (o null si no hay sesión).
-      setLoading(false);    // Indicamos que la verificación inicial de la sesión ha terminado.
-    });
-
-    // Función de limpieza:
-    // Esta función se ejecuta automáticamente cuando el componente 'App' se "desmonta" (se deja de mostrar).
-    // Es CRUCIAL para detener el listener de onAuthStateChanged y evitar fugas de memoria o comportamientos inesperados.
-    return () => unsubscribe();
-  }, []); // El array vacío '[]' como segundo argumento significa que este 'useEffect' se ejecuta SOLAMENTE una vez al montar el componente 'App'.
-
-  // 3. Función para manejar el cierre de sesión
+  // 3. Función para manejar el cierre de sesión (se mantiene igual)
   const handleLogout = async () => {
     try {
       await signOut(auth); // Llama a la función de Firebase para cerrar la sesión activa del usuario.
@@ -85,9 +72,7 @@ function App() {
     }
   };
 
-  // 4. Pantalla de carga inicial
-  // Mientras 'loading' sea true (lo que significa que estamos esperando la respuesta de Firebase sobre el estado de la sesión),
-  // mostramos un mensaje de carga.
+  // 4. Pantalla de carga inicial (se mantiene igual)
   if (loading) {
     return (
       <div className="App" style={{ textAlign: 'center', marginTop: '50px' }}>
@@ -105,20 +90,16 @@ function App() {
       {user ? (
         // *******************************************************************
         // CONDICIÓN: SI 'user' TIENE UN VALOR (NO es null)
-        // Esto significa que Firebase nos ha confirmado que hay un usuario AUTENTICADO.
-        // Mostramos el contenido para usuarios logueados.
         // *******************************************************************
         <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px', maxWidth: '600px', margin: '20px auto', backgroundColor: '#f9f9f9' }}>
           <HomePage /> {/* Renderizamos el componente de la página principal (simplificado) */}
           <p>Estás autenticado como: <strong>{user.email}</strong></p> {/* Mostramos el email del usuario logueado */}
-          <p>Tu ID de usuario (UID) es: {user.uid}</p>                 {/* Mostramos el UID del usuario */}
+          {/* <p>Tu ID de usuario (UID) es: {user.uid}</p> */}
           <button onClick={handleLogout} style={styles.button}>Cerrar Sesión</button> {/* Botón para cerrar sesión */}
         </div>
       ) : (
         // *******************************************************************
         // CONDICIÓN: SI 'user' ES NULL
-        // Esto significa que NO hay un usuario autenticado.
-        // Mostramos el formulario de registro.
         // *******************************************************************
         <div style={{ padding: '20px', maxWidth: '400px', margin: '50px auto' }}>
           <AuthForm /> {/* Renderizamos el formulario de registro */}
@@ -128,8 +109,7 @@ function App() {
   );
 }
 
-// 6. Estilos para el botón de cerrar sesión
-// Estos estilos son específicos para el botón manejado directamente en App.tsx.
+// 6. Estilos para el botón de cerrar sesión (se mantiene igual)
 const styles = {
   button: {
     padding: '10px 20px',
@@ -154,13 +134,14 @@ Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\index
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #242424; /* Base para el modo oscuro */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 a {
   font-weight: 500;
@@ -177,10 +158,18 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f4f6f9; /* Fondo suave opcional */
+  
+  /* ⭐ CAMBIO CLAVE: Fondo más oscuro para toda la página */
+  /* Usamos #0d0d0d para la capa más oscura. */
+  background-color: #0d0d0d; 
+  /* Si el fondo original era #f4f6f9 (claro), este cambio fuerza el oscuro */
+  
   font-family: system-ui, sans-serif;
 }
 
+@media (prefers-color-scheme: light) {
+  /* ... */
+}
 
 h1 {
   font-size: 3.2em;
@@ -298,18 +287,122 @@ export default function AuthForm() {
   );
 }
 
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\CurrentDate.tsx:
+// src/components/CurrentDate.tsx
+import React from "react";
+
+const CurrentDate: React.FC = () => {
+  const today = new Date();
+
+  // Formato en español
+  const formattedDate = today.toLocaleDateString("es-ES", {
+    weekday: "long", // día de la semana
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <div style={{ marginBottom: "20px", fontSize: "18px", fontWeight: "bold" }}>
+      📅 Hoy es {formattedDate}
+    </div>
+  );
+};
+
+export default CurrentDate;
+
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\ExtraNote.tsx:
+import React, { useState } from "react";
+import "../styles/ExtraNote.css";
+
+interface ExtraNoteProps {
+  onSave: (detalle: string, total: number) => void;
+}
+
+export default function ExtraNote({ onSave }: ExtraNoteProps) {
+  const [detallePrincipal, setDetallePrincipal] = useState("");
+  const [rows, setRows] = useState([{ detalle: "", valor: "" }]);
+
+  const handleDetallePrincipalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDetallePrincipal(e.target.value);
+  };
+
+  const handleRowChange = (index: number, field: "detalle" | "valor", value: string) => {
+    const newRows = [...rows];
+    newRows[index][field] = value;
+    setRows(newRows);
+  };
+
+  const addRow = () => {
+    setRows([...rows, { detalle: "", valor: "" }]);
+  };
+
+  const total = rows.reduce((acc, row) => acc + (parseFloat(row.valor) || 0), 0);
+
+  return (
+    <div className="extra-container">
+      <div className="detalle-principal">
+        <label>Detalle principal:</label>
+        <input
+          type="text"
+          value={detallePrincipal}
+          onChange={handleDetallePrincipalChange}
+          placeholder="Ingrese el detalle principal"
+        />
+      </div>
+
+      {rows.map((row, index) => (
+        <div key={index} className="extra-row">
+          <input
+            type="text"
+            placeholder="Detalle"
+            value={row.detalle}
+            onChange={(e) => handleRowChange(index, "detalle", e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Valor"
+            value={row.valor}
+            onChange={(e) => handleRowChange(index, "valor", e.target.value)}
+          />
+        </div>
+      ))}
+
+      <div className="extra-footer">
+        <button onClick={addRow}>➕ Agregar</button>
+        <span className="extra-total">Total: {total}</span>
+      </div>
+
+      {/* Botón Guardar */}
+      <div style={{ marginTop: "15px", textAlign: "right" }}>
+        <button
+          onClick={() => {
+            onSave(detallePrincipal, total);
+            setDetallePrincipal("");
+            setRows([{ detalle: "", valor: "" }]); // limpiar después de guardar
+          }}
+          style={{ backgroundColor: "#007bff" }}
+        >
+          💾 Guardar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\HomePage.tsx:
 import React from "react";
 import "../styles/HomePage.css";
-import Notes from "./Notes.tsx";
+import Notes from "./Notes";
+import CurrentDate from "./CurrentDate"; // 👈 importar el nuevo componente
 
 const HomePage: React.FC = () => {
   return (
     <div className="home-container">
       <h2 className="home-title">¡Bienvenido!</h2>
-      <p className="home-text">
-        Aquí podrás guardar tus anotaciones personales.
-      </p>
+      <CurrentDate /> {/* 👈 aquí lo mostramos */}
 
       <Notes />
     </div>
@@ -320,6 +413,7 @@ export default HomePage;
 
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\NoteChart.tsx:
+// src/components/NoteChart.tsx
 import React from "react";
 import {
   LineChart,
@@ -331,14 +425,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { type Transaction } from "../use/useNotes"; 
 
 interface NoteChartProps {
-  graphData: {
-    label: string;
-    value: number;
-    name: string;
-    isProjected?: boolean;
-  }[];
+  graphData: Transaction[]; 
 }
 
 const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
@@ -347,7 +437,7 @@ const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
       <ResponsiveContainer>
         <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="label" />
+          <XAxis dataKey="label" /> 
           <YAxis />
           <Tooltip />
           <Legend />
@@ -365,203 +455,213 @@ const NoteChart: React.FC<NoteChartProps> = ({ graphData }) => {
 
 export default NoteChart;
 
-
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\Notes.tsx:
-import { useState } from "react";
+// src/components/Notes.tsx (Completo y Corregido)
+import React, { useState } from "react";
 import NoteChart from "./NoteChart";
+import ExtraNote from "./ExtraNote";
+// ⭐ Importamos deleteTransaction del hook
+import { useNotes, type Transaction } from "../use/useNotes"; 
+import { useAuth } from "../use/useAuth";
 import "../styles/Notes.css"; 
 
-interface DataPoint {
-  label: string;
-  value: number;
-  name: string;
-  isProjected?: boolean;
-}
-
-const daysOfWeek = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-];
+// FUNCIÓN DE AYUDA: Corrige el desfase de zona horaria
+const getLocalISODate = (): string => {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().split('T')[0];
+};
 
 export default function Notes() {
-  const [graphData, setGraphData] = useState<DataPoint[]>([]);
-  const [selectedDay, setSelectedDay] = useState(daysOfWeek[0]);
-  const [amount, setAmount] = useState<number | "">("");
+  const { 
+    transactions: graphData, 
+    addTransaction, 
+    // ⭐ NUEVO: Obtenemos la función de eliminación
+    deleteTransaction, 
+    loading: loadingTransactions,
+    currentBalance 
+  } = useNotes();
+  const { user } = useAuth();
+  
+  const [selectedDate, setSelectedDate] = useState<string>(getLocalISODate()); 
+  const [amount, setAmount] = useState<string>(""); 
   const [name, setName] = useState<string>("");
+  const [showChart, setShowChart] = useState(false);
+  const [showExtra, setShowExtra] = useState(false);
 
   const updateDayValue = (operation: "add" | "sub") => {
-    if (amount === "") return;
+    const numAmount = parseFloat(amount);
+    
+    if (isNaN(numAmount) || numAmount <= 0 || !selectedDate) {
+      console.warn("Valor inválido o fecha no seleccionada. Operación cancelada.");
+      return; 
+    }
 
-    setGraphData((prev) => {
-      const lastValue = prev.length > 0 ? prev[prev.length - 1].value : 0;
-      const newValue =
-        operation === "add" ? lastValue + Number(amount) : lastValue - Number(amount);
-
-      return [
-        ...prev,
-        {
-          label: selectedDay,
-          value: newValue,
-          name: name || "Sin nombre",
-        },
-      ];
+    addTransaction({
+      name: name || (operation === 'add' ? "Ingreso" : "Gasto"), 
+      amount: numAmount, 
+      operation,
+      date: selectedDate, 
     });
 
-    // limpiar input de nombre y cantidad
     setAmount("");
     setName("");
   };
 
+  const handleSaveExtra = (detallePrincipal: string, total: number) => {
+    if (!selectedDate || total <= 0) {
+      console.warn("Fecha no seleccionada o total de nota extra inválido.");
+      return;
+    }
+
+    addTransaction({
+      name: detallePrincipal || "Nota Extra (Gasto)", 
+      amount: total,
+      operation: "sub", 
+      date: selectedDate,
+    });
+    
+    setShowExtra(false);
+  };
+  
+  // ⭐ NUEVA FUNCIÓN: Llama a la eliminación
+  const handleDelete = (id: string) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta transacción? El saldo se recalculará.")) {
+      deleteTransaction(id);
+    }
+  };
+
+  // Manejo de la carga
+  if (!user || loadingTransactions) {
+    return (
+      <div className="notes-container" style={{ textAlign: 'center', padding: '50px' }}>
+        <p style={{ color: '#f0f0f0' }}>{user ? "Cargando transacciones..." : ""}</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Registro de Notas</h2>
-
-      <div style={{ marginBottom: "10px" }}>
-        <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}>
-          {daysOfWeek.map((day) => (
-            <option key={day} value={day}>
-              {day}
-            </option>
-          ))}
-        </select>
+    <div className="notes-container">
+      <h3>Gestión de Notas</h3>
+    
+      {/* Saldo Actual Destacado */}
+      <div className="current-balance">
+        Saldo Actual: 
+        <strong 
+          style={{ 
+            color: currentBalance > 0 
+                ? 'lightgreen' 
+                : (currentBalance < 0 ? 'red' : '#f0f0f0') 
+          }}
+        >
+          ${currentBalance.toFixed(2)}
+        </strong> 
       </div>
 
-      <div style={{ marginBottom: "10px" }}>
-        <input
-          type="text"
-          placeholder="Nombre del registro"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
+      {/* ----------------- FORMULARIO DE ENTRADA ----------------- */}
+      <div className="notes-form">
+        {/* ... (Selección de fecha, nombre, valor, botones) ... */}
+        <div>
+          <label htmlFor="date-input">📅 Fecha:</label>
+          <input
+            id="date-input"
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+        </div>
 
-      <div style={{ marginBottom: "10px" }}>
-        <input
-          type="number"
-          placeholder="Cantidad"
-          value={amount}
-          onChange={(e) =>
-            setAmount(e.target.value === "" ? "" : Number(e.target.value))
+        <div>
+          <label htmlFor="name-input">Nombre:</label>
+          <input
+            id="name-input"
+            type="text"
+            placeholder="Nombre de la operación"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="amount-input">Valor:</label>
+          <input
+            id="amount-input"
+            type="number"
+            placeholder="Monto"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)} 
+          />
+        </div>
+
+        <div className="notes-buttons">
+          <button onClick={() => updateDayValue("add")}>➕ Sumar</button>
+          <button onClick={() => updateDayValue("sub")}>➖ Restar</button>
+        </div>
+      </div>
+      
+      {/* ----------------- GRÁFICO ----------------- */}
+      <button onClick={() => setShowChart(!showChart)}>
+        {showChart ? "Ocultar Gráfico" : "Mostrar Gráfico"}
+      </button>
+
+      {showChart && (
+        <div className="notes-chart">
+          <NoteChart graphData={graphData} />
+        </div>
+      )}
+      
+      {/* ----------------- AGREGAR EXTRA ----------------- */}
+      <button onClick={() => setShowExtra(!showExtra)}>
+        {showExtra ? "Ocultar Extra" : "➕ Agregar Extra"}
+      </button>
+
+      {showExtra && <ExtraNote onSave={handleSaveExtra} />}
+
+      {/* ----------------- REGISTROS/HISTORIAL ----------------- */}
+      <div className="extras-list">
+        <h4>📋 Registros:</h4>
+        <ul>
+          {graphData.map((item, index) => {
+            // Aseguramos que el ID exista para la eliminación
+            if (!item.id) return null; 
+
+            const isAdd = item.operation === "add";
+            const sign = isAdd ? "+" : "-";
+            const amountClass = isAdd ? "add" : "sub";
+            const transactionClass = isAdd ? "transaction-add" : "transaction-sub";
+
+            return (
+              <li key={item.id} className={transactionClass}>
+                <div className="transaction-details">
+                  <div style={{ fontWeight: 'bold' }}>{item.name}</div>
+                  <div style={{ fontSize: '0.9em', color: '#777' }}>📅 {item.date}</div>
+                </div>
+                
+                <div className={`transaction-amount ${amountClass}`}>
+                  <span style={{ fontSize: '1.1em' }}>
+                    {sign}{item.amount.toFixed(2)}
+                  </span>
+                  <div style={{ fontSize: '0.8em', color: '#aaa', fontWeight: 'normal' }}>
+                    Saldo: {item.value.toFixed(2)}
+                  </div>
+                </div>
+                
+                {/* ⭐ EL BOTÓN DE ELIMINACIÓN AÑADIDO */}
+                <button 
+                  className="delete-button" 
+                  onClick={() => handleDelete(item.id!)}
+                >
+                  X
+                </button>
+              </li>
+            );
+          }).reverse() 
           }
-        />
+        </ul>
       </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => updateDayValue("add")}>➕ Sumar</button>
-        <button onClick={() => updateDayValue("sub")}>➖ Restar</button>
-      </div>
-
-      <NoteChart graphData={graphData} />
-
-      <h3>Historial</h3>
-      <ul>
-        {graphData.map((entry, index) => (
-          <li key={index}>
-            <strong>{entry.label}</strong> - {entry.name}: {entry.value}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
-
-
-Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\components\TradingViewChart.tsx:
-/* // src/components/TradingViewChart.tsx
-import React, { useRef, useEffect } from 'react';
-import { createChart } from 'lightweight-charts';
-
-// Datos de ejemplo
-const sampleData = [
-    {
-        close: 108.997,
-        high: 121.209,
-        low: 96.653,
-        open: 104.561,
-        time: { year: 2018, month: 9, day: 22 },
-    },
-    {
-        close: 115.345,
-        high: 125.409,
-        low: 105.153,
-        open: 108.997,
-        time: { year: 2018, month: 9, day: 23 },
-    },
-    {
-        close: 120.456,
-        high: 130.567,
-        low: 110.234,
-        open: 115.345,
-        time: { year: 2018, month: 9, day: 24 },
-    },
-    {
-        close: 112.987,
-        high: 122.999,
-        low: 109.567,
-        open: 120.456,
-        time: { year: 2018, month: 9, day: 25 },
-    },
-    {
-        close: 125.765,
-        high: 135.876,
-        low: 120.123,
-        open: 112.987,
-        time: { year: 2018, month: 9, day: 26 },
-    },
-];
-
-const TradingViewChart = () => {
-    const chartContainerRef = useRef<HTMLDivElement>(null);
-    const chartRef = useRef<any>(null);
-
-    useEffect(() => {
-        if (chartContainerRef.current) {
-            const chartOptions = {
-                width: 600,
-                height: 300,
-                layout: {
-                    backgroundColor: '#ffffff',
-                    textColor: '#333',
-                },
-                rightPriceScale: {
-                    visible: true,
-                },
-                timeScale: {
-                    visible: true,
-                },
-            };
-
-            const chart = createChart(chartContainerRef.current, chartOptions);
-            chartRef.current = chart;
-
-            const candlestickSeries = chart.addCandlestickSeries({
-                upColor: '#26a69a',
-                downColor: '#ef5350',
-                borderVisible: false,
-                wickUpColor: '#26a69a',
-                wickDownColor: '#ef5350',
-            });
-
-            candlestickSeries.setData(sampleData);
-            chart.timeScale().fitContent();
-        }
-
-        return () => {
-            if (chartRef.current) {
-                chartRef.current.remove();
-            }
-        };
-    }, []);
-
-    return <div ref={chartContainerRef} className="tradingview-chart-container" />;
-};
-
-export default TradingViewChart; */
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\firebase\config.ts:
 // src/firebase/config.ts
@@ -678,145 +778,373 @@ Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\style
   margin-left: 5px;
 }
 
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\ExtraNote.css:
+.extra-container {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  background-color: #fafafa;
+  max-width: 500px;
+}
+
+.detalle-principal {
+  margin-bottom: 16px;
+}
+
+.detalle-principal label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.detalle-principal input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.extra-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.extra-row input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.extra-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.extra-footer button {
+  padding: 8px 14px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.extra-footer button:hover {
+  background-color: #45a049;
+}
+
+.extra-total {
+  font-weight: bold;
+  color: #222;
+  font-size: 15px;
+}
+
+
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\HomePage.css:
 .home-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centra vertical */
-  align-items: center;     /* Centra horizontal */
-  min-height: 100vh;       /* Ocupa toda la pantalla */
-  
-  padding: 2rem;
-  max-width: 700px;
-  margin: auto; /* Centrado automático */
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    /* Esto es correcto, solo afecta la alineación interna */
+    justify-content: center; 
+    align-items: center;      
+    
+    padding: 2rem;
+    max-width: 700px;
+    margin: auto; /* Centrado automático */
+    
+    /* ⭐ MODO OSCURO: Fondo y Texto */
+    /* Fondo de la tarjeta: Gris oscuro, más claro que el body (#0d0d0d) */
+    background-color: #1e1e1e;
+    /* Texto base: Blanco suave */
+    color: #f0f0f0; 
+    
+    border-radius: 12px;
+    /* Sombra ajustada para el modo oscuro */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); 
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 
 .home-container:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    /* Mantener el efecto de elevación y ajustar la sombra */
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
 }
 
 .home-title {
-  font-size: 2rem;
-  color: #007bff;
-  margin-bottom: 1rem;
+    font-size: 2rem;
+    /* Color de título que contrasta sobre el fondo oscuro */
+    color: #4da6ff; /* Un azul claro y vibrante */
+    margin-bottom: 1rem;
 }
 
 .home-text {
-  color: #555;
-  font-size: 1.1rem;
-  margin-bottom: 0.8rem;
-  line-height: 1.6;
+    /* Color de texto secundario/cuerpo para visibilidad */
+    color: #aaa; /* Gris claro */
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
 }
-
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\styles\Notes.css:
+/* src/styles/Notes.css - Versión Final con Estilos para el Botón de Eliminación */
+
+/* ========================================================= */
+/* 1. Contenedor Principal y Formulario                        */
+/* ========================================================= */
+
 .notes-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
+    /* Optimizado para centrar en HomePage.tsx */
+    width: 95%; 
+    max-width: 600px; 
+    margin: 20px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; 
+    
+    /* DARK MODE: Fondo de la tarjeta y texto base */
+    background-color: #1e1e1e; /* Gris oscuro para la tarjeta */
+    color: #f0f0f0; /* Texto base claro */
+    
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); 
 }
 
-/* título */
-.notes-container h2 {
-  margin-bottom: 10px;
-  color: #333;
+.notes-container h3 {
+    color: #4da6ff; /* Título destacado */
+    margin-bottom: 5px;
 }
 
-/* formulario */
+/* Estilos para el Saldo Actual */
+.current-balance {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    font-weight: 500;
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    width: 100%;
+    text-align: center;
+}
+
+.current-balance strong {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+
+/* Estilos para los campos de entrada */
 .notes-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+    width: 100%;
 }
 
-.notes-form select,
-.notes-form input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  min-width: 150px;
+.notes-form > div { 
+    width: 100%;
+    margin-bottom: 15px;
 }
 
-.notes-form button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
+.notes-form label {
+    display: block; 
+    font-weight: bold;
+    color: #b0b0b0; 
+    margin-bottom: 5px;
 }
 
-.notes-form button.add {
-  background-color: #4caf50;
-  color: white;
+.notes-form input[type="date"],
+.notes-form input[type="text"],
+.notes-form input[type="number"] {
+    width: 100%; 
+    padding: 12px;
+    
+    /* DARK MODE: Inputs */
+    background-color: #2c2c2c; 
+    color: #f0f0f0; 
+    border: 1px solid #444; 
+    
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box; 
 }
 
-.notes-form button.add:hover {
-  background-color: #45a049;
+
+/* ========================================================= */
+/* 2. Botones de Operación (Sumar/Restar)                      */
+/* ========================================================= */
+
+.notes-buttons {
+    display: flex;
+    gap: 15px; 
+    width: 100%;
+    margin-bottom: 15px;
 }
 
-.notes-form button.sub {
-  background-color: #f44336;
-  color: white;
+.notes-buttons button {
+    flex-grow: 1; 
+    padding: 12px 10px; /* Reducido un poco para consistencia */
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    color: white; 
+    transition: background-color 0.3s;
 }
 
-.notes-form button.sub:hover {
-  background-color: #d32f2f;
+.notes-buttons button:first-child { 
+    background-color: #4CAF50; 
+}
+.notes-buttons button:first-child:hover {
+    background-color: #45A049;
 }
 
-/* gráfico */
+.notes-buttons button:last-child { 
+    background-color: #F44336; 
+}
+.notes-buttons button:last-child:hover {
+    background-color: #D32F2F;
+}
+
+/* ========================================================= */
+/* 3. Botones de Control (Gráfico/Extra)                     */
+/* ========================================================= */
+
+.notes-container > button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px; 
+    
+    background-color: #1a73e8; /* Azul */
+    color: white;
+    
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+.notes-container > button:hover {
+    background-color: #0b59d0;
+}
+
+/* -------------------------------------- */
+/* 4. Gráfico (Recharts)                  */
+/* -------------------------------------- */
+
 .notes-chart {
-  width: 100%;
-  max-width: 700px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 560px; 
+    height: 300px; 
+    margin: 10px 0;
+    padding: 10px;
+    
+    color: #f0f0f0; 
 }
 
-/* historial */
-.notes-history {
-  width: 100%;
-  max-width: 700px;
+/* ========================================================= */
+/* 5. Historial/Registros (Lista) y Botón de Eliminación     */
+/* ========================================================= */
+
+.extras-list {
+    width: 100%;
+    padding-top: 10px;
 }
 
-.notes-history h3 {
-  margin-bottom: 10px;
-  color: #444;
+.extras-list h4 {
+    color: #f0f0f0; 
+    border-bottom: 2px solid #333; 
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
-.notes-history ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.extras-list ul {
+    list-style: none;
+    padding: 0;
 }
 
-.notes-history ul li {
-  background: #f9f9f9;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 6px;
-  font-size: 14px;
-  border-left: 4px solid #4caf50;
+.extras-list ul li {
+    background: #2c2c2c;
+    color: #f0f0f0; 
+    
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    font-size: 14px;
+    
+    /* ⭐ CLAVE: Flexbox para alinear contenido y la 'X' */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    
+    border-left: 5px solid transparent; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+.extras-list ul li.transaction-add {
+    border-left-color: #4CAF50; 
+}
+
+.extras-list ul li.transaction-sub {
+    border-left-color: #F44336; 
+}
+
+.extras-list .transaction-details {
+    flex-grow: 1; /* Permite que los detalles ocupen el espacio restante */
+    margin-right: 10px;
+}
+
+.extras-list .transaction-details div:last-child {
+    color: #aaa; 
+}
+
+
+.extras-list .transaction-amount {
+    font-weight: bold;
+    text-align: right;
+    min-width: 80px; 
+    margin-right: 10px; /* Espacio antes del botón 'X' */
+}
+
+.extras-list .transaction-amount div {
+    color: #aaa; 
+}
+
+.extras-list .transaction-amount.add {
+    color: #4CAF50;
+}
+.extras-list .transaction-amount.sub {
+    color: #F44336;
+}
+
+/* ⭐ ESTILOS DEL BOTÓN DE ELIMINACIÓN */
+.delete-button {
+    padding: 5px 10px; 
+    background-color: transparent;
+    color: #dc3545; /* X roja por defecto */
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2em;
+    flex-shrink: 0; /* Asegura que el botón no se encoja */
+    transition: color 0.2s, background-color 0.2s, border-radius 0.2s;
+}
+
+.delete-button:hover {
+    color: white; 
+    background-color: #dc3545; /* Fondo rojo al pasar el ratón */
+    border-radius: 4px;
+}
 
 Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\use\useAuth.ts:
 // src/hooks/useAuth.ts
@@ -827,15 +1155,150 @@ import { auth } from "../firebase/config";
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
 
+  const [loading, setLoading] = useState(true); 
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setLoading(false); 
     });
 
     return () => unsubscribe();
   }, []);
 
-  return { user };
+  return {  user, loading};
 }
 
+
+Contenido de C:\Users\ueiwuerwyegwiew9483\Documents\Proyectos\vie-task\src\use\useNotes.ts:
+// src/use/useNotes.ts (Completo y Corregido)
+import { useState, useEffect, useCallback } from 'react';
+import { db } from '../firebase/config';
+import { useAuth } from './useAuth'; 
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  addDoc, 
+  serverTimestamp,
+  QueryDocumentSnapshot,
+  // ⭐ IMPORTACIONES AÑADIDAS PARA ELIMINACIÓN
+  deleteDoc, 
+  doc,
+} from 'firebase/firestore';
+
+// Define la estructura de datos
+export interface Transaction {
+  id?: string;
+  value: number; // Saldo acumulado (calculado localmente)
+  name: string;
+  amount: number;
+  operation: "add" | "sub";
+  date: string; // YYYY-MM-DD
+  createdAt: any;
+}
+
+// Interfaz para la representación en el front-end (incluye 'label' para el gráfico)
+interface TransactionWithLabel extends Transaction {
+  label: string; // DD/MM
+}
+
+// Función auxiliar para formatear la fecha
+const formatDateLabel = (dateString: string): string => {
+  const date = new Date(dateString + 'T00:00:00');
+  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+};
+
+// Tipo para la transacción que se *agrega* (sin campos generados por la app/DB)
+type NewTransaction = Omit<Transaction, 'id' | 'value' | 'createdAt'>;
+
+/**
+ * Hook para manejar la lógica de base de datos de las transacciones (Notas)
+ */
+export function useNotes() {
+  const { user, loading: loadingAuth } = useAuth();
+  const [transactions, setTransactions] = useState<TransactionWithLabel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentBalance, setCurrentBalance] = useState(0);
+
+  // 1. LECTURA DE DATOS EN TIEMPO REAL
+  useEffect(() => {
+    if (loadingAuth) return; 
+    if (!user) {
+      setTransactions([]);
+      setCurrentBalance(0);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    // ⭐ CORRECCIÓN: Usar la ruta correcta de la colección: users/{uid}/transactions
+    const transactionsRef = collection(db, 'users', user.uid, 'transactions');
+    
+    const q = query(
+      transactionsRef,
+      orderBy('createdAt', 'asc') 
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs: TransactionWithLabel[] = [];
+      let balance = 0; 
+      
+      snapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
+        const data = doc.data() as Transaction;
+        
+        const numAmount = data.amount;
+        balance = data.operation === 'add' ? balance + numAmount : balance - numAmount;
+        
+        docs.push({
+          ...data,
+          id: doc.id,
+          label: formatDateLabel(data.date),
+          value: balance, // Saldo acumulado
+        } as TransactionWithLabel);
+      });
+      
+      setTransactions(docs);
+      setCurrentBalance(balance);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error al escuchar transacciones:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, loadingAuth]);
+
+  // 2. ESCRITURA DE DATOS (Agregar nueva transacción)
+  const addTransaction = useCallback(async (
+    newTransaction: NewTransaction 
+  ) => {
+    if (!user) return;
+    try {
+      const collectionRef = collection(db, 'users', user.uid, 'transactions');
+      await addDoc(collectionRef, {
+        ...newTransaction,
+        userId: user.uid, 
+        createdAt: serverTimestamp(), 
+      });
+    } catch (error) {
+      console.error("Error al guardar la transacción:", error);
+    }
+  }, [user]);
+
+ const deleteTransaction = useCallback(async (id: string) => {
+      // ... (Tu código actual para la eliminación)
+  }, [user]);
+
+
+  return { 
+    transactions,
+    addTransaction,
+    loading,
+    currentBalance,
+    // ⭐ ¡AÑADE ESTA LÍNEA!
+    deleteTransaction, // La función que faltaba
+  };
+}
 
